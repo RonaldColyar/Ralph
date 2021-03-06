@@ -23,6 +23,7 @@ class Interface:
                 client , addr = self.server.accept()
                 self.connected += 1 
                 self.check_declaration(client,addr)
+        
     def video_thread():
         #recv from pi
         #send to desktop

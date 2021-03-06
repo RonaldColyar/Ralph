@@ -14,9 +14,8 @@ class CommandTesting(unittest.TestCase):
 
 class ProxyTesting(unittest.TestCase):
 		
-	def testproxy(self):
+	def test_proxy_desktop(self):
 		desktop_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		pi_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		proxy = Proxy.Interface()
 		proxy_thread = threading.Thread(target = proxy.start_server)
 		proxy_thread.start()
@@ -24,7 +23,6 @@ class ProxyTesting(unittest.TestCase):
 		desktop_client.connect(('127.0.0.1',50222))
 		#gather the init message
 		who_response = desktop_client.recv(100).decode("ascii")
-		print(who_response)
 		#should be who are you
 		self.assertEqual(who_response , "WHO_ARE_YOU")
 		#claim desktop
@@ -33,9 +31,13 @@ class ProxyTesting(unittest.TestCase):
 		status_response = desktop_client.recv(100).decode("ascii")
 		#should be waiting on raspberry pi 
 		self.assertEqual(status_response , "AWAITING_PI")
+		#close sockets
+		desktop_client.close()
+		proxy.running = False
+		proxy.server.close()
 
-	
-
+	def test_proxy_pi(self):
+		pi_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 if __name__ == '__main__':
 	unittest.main()
