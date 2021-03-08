@@ -41,10 +41,10 @@ class CommandHandler:
 			return False
 	
 		
-
+	
 
 	def check_command(self ,command):
-		result = self.command_is_valid_len()
+		result = self.command_is_valid_len() #sets 'self.current_command'
 		if self.current_command[0] == "move":
 			if  result == True and self.level_is_int() == True:
 				pass
