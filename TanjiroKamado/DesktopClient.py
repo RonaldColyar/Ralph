@@ -58,8 +58,16 @@ class DesktopClient:
 				
 	def wait_on_pi(self):
 		time_thread = threading.Thread(target = self.monitor_time)
+		time_thread.start()
 		# timeout functionality
-		server_response = 
+		server_response = self.client.recv(100).decode("ascii")
+		self.clock_running == False
+		if server_response == "SUCCESS":
+			self.start_threads()
+		else:
+			self.client.close()
+			print("issue!!")
+		
 
 	def check_response_and_proceed(self ,response):
 			if response == "SUCCESS":
