@@ -23,7 +23,7 @@ class Interface:
                 client , addr = self.server.accept()
                 self.connected += 1 
                 self.check_declaration(client,addr)
-        
+
     def video_thread():
         #recv from pi
         #send to desktop
@@ -34,49 +34,63 @@ class Interface:
             command = self.desktop_client.recv(100).decode("ascii")
             self.pi_client.send(command.encode("ascii"))
 
-    def desktop_successful_event(self,client):
-            self.desktop_client == client
-            if self.pi_client != None:
+    #Checks if both clients are connected
+    #when both are connected data will be streamed
+    #between both client and desktop
+    def successful_event(self,class_client_ref,client
+                        ,other_client,message):
+            class_client_ref = client
+
+            if other_client != None: 
+                client.send("SUCCESS".encode("ascii"))
                 thread = threading.Thread(target =self.video_thread)
                 thread.start()
+                self.listen_for_movement()
                 return True
             else:
-                client.send("AWAITING_PI".encode("ascii"))
-                return False
-    def pi_successful_event(self,client):
-            self.pi_client = client
-            if self.desktop_client != None:
-                thread = threading.Thread(target =self.video_thread)
-                thread.start()
-                return True
-            else:
-                client.send("AWAITING_DE".encode("ascii"))
+                client.send(message.encode("ascii"))
                 return False
         
     def failed_event(client,message,addr):
-
         self.connected -= 1
         client.send(message)
         client.close()
+        if message == "ALREADYPI":
+            self.logger.conflicting_declaration("PI" , addr)
+        else:
+            self.logger.conflicting_declaration("Desktop" ,addr)
+        self.logger.disconnection(addr)
+    
+
 
     #1.there can't be two desktops connected!
     #2.there can't be two pi connected!
-    def check_declaration(self,client,addr):
-        client.send("WHO_ARE_YOU".encode("ascii"))
-        declaration = client.recv(100).decode("ascii")
-        if declaration == "DESKTOP" and self.desktop_client == None : 
-            if self.desktop_successful_event(client) == True:
-                self.listen_for_movement()
-        elif declaration == "DESKTOP" and self.desktop_client != None:
-            self.failed_event(client , "ALREADYDESKTOP",addr)
-        elif declaration == "PI" and self.pi_client == None:
-            if self.pi_successful_event(client) == True:
-                self.listen_for_movement()
+    def check_declaration_tier_two(self,declaration,client):
+        if declaration == "PI" and self.pi_client == None:
+            self.successful_event(self.pi_client,
+                    client,self.desktop_client,"AWAITING_DE")
+                
         elif declaration == "PI" and self.pi_client != None:
             self.failed_event(client ,"ALREADYPI",addr)
         else:
             print("Unknown Command!")
             failed_event(client , "Unknown Command!",addr)
+
+    def check_declaration(self,client,addr):
+        client.send("WHO_ARE_YOU".encode("ascii"))
+        declaration = client.recv(100).decode("ascii")
+
+        if declaration == "DESKTOP" and self.desktop_client == None :
+            self.desktop_client == client 
+            self.successful_event(self.desktop_client ,
+                        client,self.pi_client,"AWAITING_PI") 
+                
+        elif declaration == "DESKTOP" and self.desktop_client != None:
+            self.failed_event(client , "ALREADYDESKTOP",addr)
+
+        else:
+            self.check_declaration_tier_two(declaration,client)
+
 
                 
 
