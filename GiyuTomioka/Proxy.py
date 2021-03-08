@@ -14,6 +14,7 @@ class Interface:
         self.pi_client = None
         self.desktop_client = None
         self.logger = CLI.CommandLineInterface()
+        self.eh = EncryptionHandler()
 
     def start_server(self):
         self.server.bind((self.host,self.port))
@@ -32,6 +33,8 @@ class Interface:
     def listen_for_movement():
         while self.running == True:
             command = self.desktop_client.recv(100).decode("ascii")
+            if self.eh.decrypted(command) == "-DesktopDisconnect":
+                self.desktop_client = None
             self.pi_client.send(command.encode("ascii"))
 
     #Checks if both clients are connected
@@ -39,8 +42,8 @@ class Interface:
     #between both client and desktop
     def successful_event(self,class_client_ref,client
                         ,other_client,message):
-            class_client_ref = client
 
+            class_client_ref = client
             if other_client != None: 
                 client.send("SUCCESS".encode("ascii"))
                 thread = threading.Thread(target =self.video_thread)
@@ -60,7 +63,7 @@ class Interface:
         else:
             self.logger.conflicting_declaration("Desktop" ,addr)
         self.logger.disconnection(addr)
-    
+
 
 
     #1.there can't be two desktops connected!
