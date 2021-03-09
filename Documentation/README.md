@@ -139,11 +139,12 @@
             else:
                 client.send(message.encode("ascii"))
  ```
+ 
   ### Parameters:
   
-  ###`class_client_ref` refers to  the  `self.pi_client`/`self.desktop_client ` states held by the `Interface Class`
-  ### `other_client` refers to the opposing client state. For example one connection claims to be "DESKTOP" the `other_client `would be  `self.pi_client` and the  `class_client_ref` would be `self.desktop_client` 
-  ### `client` refers to the connection(socket object) object passed from the original acception of connection in `start_server(self)`
-  ###  `message` updates the `client` on the status of the `other_client` if the `other_client` isn't connected! 
+  -  `class_client_ref` refers to  the  `self.pi_client`/`self.desktop_client ` states held by the `Interface Class`
+  - `other_client` refers to the opposing client state. For example one connection claims to be "DESKTOP" the `other_client `would be  `self.pi_client` and the  `class_client_ref` would be `self.desktop_client` 
+  - `client` refers to the connection(socket object) object passed from the original acception of connection in `start_server(self)`
+  -  `message` updates the `client` on the status of the `other_client` if the `other_client` isn't connected! 
   
  <hr>
