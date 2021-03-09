@@ -59,7 +59,7 @@
  
  <p> there is a <a href = "https://github.com/RonaldColyar/Ralph/blob/main/GiyuTomioka/TimeoutManager.py"> time out manager </a> that checks to see if a client has been connected for more than 20 seconds(without stating who they are) before timing them out!: </p> 
  
- ### by calling  `start_timer(self , client,num)`the 20 second  countdown begins! 
+ ### By calling  `start_timer(self , client,num)`the 20 second  countdown begins! 
  
  ```python
  
@@ -83,8 +83,67 @@
                 self.check_declaration_tier_three(declaration,client,addr)
  
  ```
-  <p>Here we check for  conflicting declarations. For example , if one client claims that they're the desktop client but there is already a claimed desktop client connected we have a conflict of declaration because there can only be one desktop/pi. </p>
-  
  
+ ### Separating the declaration checks into smaller methods for best practice, here is tier three :
+ 
+ ```python
+     def check_declaration_tier_three(self,declaration,client,addr):
+        if declaration == "PI" and self.pi_client == None:
+            self.successful_event(self.pi_client,
+                    client,self.desktop_client,"AWAITING_DE") 
+        elif declaration == "PI" and self.pi_client != None:
+            self.failed_event(client ,"ALREADYPI",addr)
+        elif declaration == None:
+            return
+        else:
+            print("Unknown Command!")
+            failed_event(client , "Unknown Command!",addr)
+ 
+ 
+ ```
+  <p>Here we check for  conflicting declarations. For example , if one client claims that they're the desktop client but there is already a claimed desktop client connected we have a conflict of declaration because there can only be one desktop/pi. Once this conflict is discovered we trigger the failed event: </p>
+  
+
+ 
+ 
+ ```python
+   def failed_event(client,message,addr):
+        self.connected -= 1
+        client.send(message)
+        client.close()
+        if message == "ALREADYPI":
+            self.logger.conflicting_declaration("PI" , addr)
+        else:
+            self.logger.conflicting_declaration("Desktop" ,addr)
+        self.logger.disconnection(addr)
+
+ 
+ ```
+ 
+ 
+ 
+ ### If there is no failed event the ` successful_event(self,class_client_ref,client,other_client,message)` is triggered: 
+
+ 
+ ```python
+     def successful_event(self,class_client_ref,client
+                        ,other_client,message):
+
+            class_client_ref = client
+            if other_client != None: 
+                client.send("SUCCESS".encode("ascii"))
+                other_client.send("SUCCESS".encode("ascii"))
+                thread = threading.Thread(target =self.video_thread)
+                thread.start()
+                self.listen_for_movement()
+            else:
+                client.send(message.encode("ascii"))
+ ```
+  ### Parameters:
+  
+  ###`class_client_ref` refers to  the  `self.pi_client`/`self.desktop_client ` states held by the `Interface Class`
+  ### `other_client` refers to the opposing client state. For example one connection claims to be "DESKTOP" the `other_client `would be  `self.pi_client` and the  `class_client_ref` would be `self.desktop_client` 
+  ### `client` refers to the connection(socket object) object passed from the original acception of connection in `start_server(self)`
+  ###  `message` updates the `client` on the status of the `other_client` if the `other_client` isn't connected! 
   
  <hr>
