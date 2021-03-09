@@ -147,4 +147,9 @@
   - `client` refers to the connection(socket object) object passed from the original acception of connection in `start_server(self)`
   -  `message` updates the `client` on the status of the `other_client` if the `other_client` isn't connected! 
   
+  
+  ### when the successful event is triggered:
+ 
+  - the   `video_thread` is started(this thread streams video from the pi to the desktop).
+  - the  main thread is then blocked by  `listen_for_movement` which sends movement commands from the desktop to the pi.
  <hr>
