@@ -14,14 +14,27 @@
 </p>
 
 
+### Disclaimer
 
-
-<p>Disclaimer - The documentation is here to give you a run through of the data flow. The code in the documentation will change over time. I will try my best to keep the documentation updated!</p>
+<p> The documentation is here to give you a run through of the data flow. The code in the documentation will change over time. I will try my best to keep the documentation updated!</p>
 
 
 
 
 # Proxy Server( [GiyuTomioka](https://github.com/RonaldColyar/Ralph/tree/main/GiyuTomioka)):
+### The proxy server is wrapped in the class `Interface`
+### The starting point of the proxy server is ` def start_server(self)`
+  ```python 
+      def start_server(self):
+        while self.running == True  and self.connected<2:
+            client , addr = self.server.accept()
+            self.connected += 1 
+            thread = threading.Thread(target = self.check_declaration , args=(client,addr) )
+            thread.start()
+  
+ ```
+ 
+ <p>A new thread is started for every new connection(Maximum of two for now) to avoid blocking other connections</p>
 
 ### Incoming connections are controlled by `check_declaration(self,client,addr)` 
 ```python
@@ -41,5 +54,7 @@
 <p> check_declaration pings the Client for information about who they are!
   The client could either be the <a href = "https://github.com/RonaldColyar/Ralph/tree/main/DemonSlayerCorps" >Raspberry Pi <a/> or <a href = "https://github.com/RonaldColyar/Ralph/tree/main/TanjiroKamado" >The desktop client <a/>  
   </p>
+  
+ 
   
  <hr>
