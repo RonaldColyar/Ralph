@@ -23,7 +23,7 @@
 
 # Proxy Server( [GiyuTomioka](https://github.com/RonaldColyar/Ralph/tree/main/GiyuTomioka)):
 ### The proxy server is wrapped in the class `Interface`
-### The starting point of the proxy server is ` def start_server(self)`
+### The starting point of the proxy server is ` start_server(self)`
   ```python 
       def start_server(self):
         while self.running == True  and self.connected<2:
@@ -52,8 +52,38 @@
 
 ```
 <p> check_declaration pings the Client for information about who they are!
-  The client could either be the <a href = "https://github.com/RonaldColyar/Ralph/tree/main/DemonSlayerCorps" >Raspberry Pi <a/> or <a href = "https://github.com/RonaldColyar/Ralph/tree/main/TanjiroKamado" >The desktop client <a/>  
-  </p>
+  The client could either be the <a href = "https://github.com/RonaldColyar/Ralph/tree/main/DemonSlayerCorps" >Raspberry Pi <a/> or <a href = "https://github.com/RonaldColyar/Ralph/tree/main/TanjiroKamado" >The desktop client. <a/>  
+  </p>  
+  
+ ### Since   `declaration = client.recv(100).decode("ascii")` blocks the thread  
+ 
+ <p> there is a <a href = "https://github.com/RonaldColyar/Ralph/blob/main/GiyuTomioka/TimeoutManager.py"> time out manager </a> that checks to see if a client has been connected for more than 20 seconds(without stating who they are) before timing them out!: </p> 
+ 
+ ### by calling  `start_timer(self , client,num)`the 20 second  countdown begins! 
+ 
+ ```python
+ 
+      def start_timer(self , client,num):
+        thread = threading.Thread(target = self.monitor_timeout , args = (client,num))
+        thread.start()
+ ```
+ ### Once the client responds with who they are `stop_timer(self ,num)` is called and we proceed to check the actual declaration with  `check_declaration_tier_two(self,declaration,addr,client)`:
+ 
+ 
+ ```python
+     def check_declaration_tier_two(self,declaration,addr,client):
+        if declaration == "DESKTOP" and self.desktop_client == None :
+                self.desktop_client == client 
+                self.successful_event(self.desktop_client ,
+                            client,self.pi_client,"AWAITING_PI") 
+        elif declaration == "DESKTOP" and self.desktop_client != None:
+                self.failed_event(client , "ALREADYDESKTOP",addr)
+
+        else:
+                self.check_declaration_tier_three(declaration,client,addr)
+ 
+ ```
+  <p>Here we check for  conflicting declarations. For example , if one client claims that they're the desktop client but there is already a claimed desktop client connected we have a conflict of declaration because there can only be one desktop/pi. </p>
   
  
   
