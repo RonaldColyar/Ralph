@@ -1,5 +1,11 @@
 # Ralph
+
+<h1 align = "center"  > <img  width = "300px" src = "https://github.com/RonaldColyar/Ralph/blob/main/Documentation/Ralph.png" /> </h1>
+
+Check the [documentation](https://github.com/RonaldColyar/Ralph/tree/main/Documentation)!!!!
+
 Raspberry Pi home-rover that streams video/audio over sockets securely!
+
 Making home monitoring fun again! 😄
 
 # Project Structure!
