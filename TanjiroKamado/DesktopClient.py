@@ -75,6 +75,7 @@ class DesktopClient:
 				self.start_threads()
 			elif response == "AWAITING_PI":
 				print(colored("Server says-> Waiting on pi!" , "green"))
+				self.wait_on_pi()
 			elif response == "ALREADYDESKTOP":
 				print("Server says->"+
 					colored("There is already a desktop connected!", "red"))
