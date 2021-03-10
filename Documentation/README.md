@@ -153,3 +153,118 @@
   - the   `video_thread` is started(this thread streams video from the pi to the desktop).
   - the  main thread is then blocked by  `listen_for_movement` which sends movement commands from the desktop to the pi.
  <hr>
+ 
+ 
+# Raspberry Pi Client( [DemonSlayerCorps](https://github.com/RonaldColyar/Ralph/tree/main/DemonSlayerCorps)):
+### The start of the pi client is `start_client(self)`:
+```python 
+
+	def start_client(self):
+		self.running = True
+		who_response = self.client.recv(100).decode("ascii")
+		if who_response == "WHO_ARE_YOU":
+			client.send("PI".encode("ascii"))
+			server_response = self.client.recv(100).decode("ascii")
+			self.check_response_and_proceed(server_response)
+
+```
+
+<p> First we wait on a response from the server that should question who we claim to be(Desktop or Pi). </p>
+
+
+- We declate that we are the PI.
+- We then check the response to the declaration with  `check_response_and_proceed(self ,response)`:
+
+
+```python
+
+	def check_response_and_proceed(self ,response):
+			if response == "SUCCESS":
+				print(colored("Successfully paired! Starting Client....","green"))
+				self.start_threads()
+			elif response == "AWAITING_DE":
+				print(colored("Server says-> Waiting on desktop!" , "green"))
+				self.wait_for_desktop()
+			elif response == "ALREADYPI":
+				print("Server says->"+
+					colored("There is already a PI connected!", "red"))
+			else:
+				print("Server says->" ,
+					colored("you have sent an unknown command!" , "red"))
+
+```
+
+<p>If we get a "SUCCESS" message then we know there is a desktop client connected !  </p>
+
+
+### We can now begin to stream data/listen for movements with `start_threads(self)`:
+
+  ```python
+  	def start_threads(self):
+		movement_thread = threading.Thread(target = self.listen_for_messages)
+		streaming_thread = threading.Thread(target = self.stream_video)
+		movement_thread.start()
+		streaming_thread.start()
+   ```
+
+
+
+###  What happens if the desktop connects? There will be lingering threads streaming to the proxy for no reason!
+
+### We handle this issue in `listen_for_messages(self)`:
+
+
+```python
+	def listen_for_messages(self):
+		while self.running == True:
+			message = self.client.recv(100).decode("ascii")
+			decrypted_message = eh.decrypted(message)
+			if decrypted_message == '-DesktopDisconnect':
+				thread = threading.Thread(target = self.stop_streaming_and_wait_for_desktop)
+				thread.start()
+				break #stop listening for messages(end current thread)
+			
+			else:
+				self.route_movement(decrypted_message)
+
+```
+
+<p>Note: There will only be two types of messages that reach the pi : Movements and Declarations of disconnecting </p>
+
+
+<p> In the above block(one of the two threads running on the pi) we decrypt each message and check if the message was a declaration that the desktop disconnected! </p>
+
+<p> If there was a disconnect declaration we start a new thread that stops the streaming thread and begin to wait for the desktop to connect again!   </p>
+### that thread started by the function call `stop_streaming_and_wait_for_desktop(self)` from  `thread = threading.Thread(target = self.stop_streaming_and_wait_for_desktop)`
+
+
+
+###Instead of letting the thread loop around again we just `break` from the `listen_for_messages` thread  after starting this new thread!
+
+### how is the  streaming thread stopped?:
+
+```python 
+	def stop_streaming_and_wait_for_desktop(self):
+			self.running = False#stop  the video streaming thread!
+			time.sleep(8)  #give enough time to close
+			self.running = True
+			self.wait_for_desktop()
+
+```
+###   `self.running `  controls the while condition of the streaming thread. Setting it to false and waiting 8 seconds give the thread enough time to stop.
+
+### Now we `self.wait_for_desktop()`:
+
+
+```python
+	def wait_for_desktop(self):
+		server_response = self.client.recv(100).decode("ascii")
+		if server_response == "SUCCESS":
+			self.start_threads()
+		else:
+			self.client.close()
+			print("issue!!")
+
+```
+
+<p>We wait untill the desktop is connected and then we start up the threads again. </p>
