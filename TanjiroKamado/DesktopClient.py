@@ -82,7 +82,10 @@ class DesktopClient:
 			else:
 				print("Server says->" ,
 					colored("you have sent an unkown command!" , "red"))
-
+				
+	def print_menu(self):
+		with open("../AsciiArt/ralph.txt" , "r") as file:
+			print(file.read())
 
 
 	def start_client(self):
