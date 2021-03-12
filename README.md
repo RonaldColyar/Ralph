@@ -1,4 +1,4 @@
-# Ralph
+# Ralph The Home Monitor
 
 <h1 align = "center"  > <img  width = "300px" src = "https://github.com/RonaldColyar/Ralph/blob/main/Documentation/Ralph.png" /> </h1>
 
